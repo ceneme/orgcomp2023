@@ -3,11 +3,11 @@
 .data 
 .align 0
 
-insertNumElem:	.asciz "Insira o numero de elementos da lista (>=5):"
-insertInt:	.asciz "Insira um ID (inteiro)"
-insertString:	.asciz "Insira uma string de ate 28 caracteres"
-lab_printAll:	.asciz "Todos os elementos"
-nxtLine:	.asciz "----------"
+insertNumElem:	.asciz "Insira o numero de elementos da lista (>=5): "
+insertInt:	.asciz "Insira um ID (inteiro): "
+insertString:	.asciz "Insira uma string de ate 28 caracteres: "
+lab_printAll:	.asciz "Todos os elementos\n"
+nxtLine:	.asciz "\n-------------\n"
 lab_str:	.asciz "String: "
 lab_id:		.asciz "ID: "
 
@@ -47,7 +47,7 @@ start:
 add_node:
 	# aloca o espaco de 32 bytes e move o novo node para 
 	jal allocate
-	mv t4, a7
+	mv t4, a0
 	
 	# newNode-> next = 0
 	sw zero, 32(t4)
@@ -69,7 +69,7 @@ add_node:
 	
 	# le a string e insere no novo node
 	li a7, 8
-	lb a0, 4(t4)
+	addi a0, t4, 4
 	li a1, 28
 	ecall
 	
@@ -83,43 +83,46 @@ add_node:
 	lw t2, 32(a3)
 	sw t2, 36(t4)
 	
-	lb t0, 4(t4)
+	addi t0, t4, 4
 	sw t0, 32(a3)
 	
-	lb a3, 4(t4)
+	addi a3, t4, 4
 	
 	j start
 	
 printAll:
-	lb a0, lab_printAll
+	la a0, lab_printAll
 	li a7, 4
 	ecall
 	
-	lb t4, (s7)
+	mv t4, s7
 	beqz t4, exit
 	
 printElement:
+	
 	la a0, lab_str
 	li a7, 4
 	ecall
 	
-	mv a0, t1
+	# imprime a string
+	mv a0, t4
 	ecall
-
+	
 	la a0, lab_id
 	ecall
 	
+	# imprime o ID
 	li a7, 1
-	lw a0, -4(t1)
+	lw a0, -4(t4)
 	ecall
 	
 	la a0, nxtLine
 	li a7, 4
 	ecall
 	
-	lw t2, 32(t1)
+	lw t2, 32(t4)
 	beqz t2, exit
-	lb t1, (t2)
+	mv t4, t2
 	j printElement
 	
 allocate:
@@ -129,8 +132,8 @@ allocate:
 	jr ra
 	
 firstNode:
-	lb s7, 4(t1)
-	lb a3, 4(t1)
+	addi s7, t4, 4
+	addi a3, t4, 4
 	j start
 	
 exit:
